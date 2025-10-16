@@ -61,6 +61,10 @@ export const finalizePrompts = async (apiKey: string, mappedPrompts: string, sys
   return callGemini(apiKey, systemPrompt, mappedPrompts);
 };
 
+export const extractVoiceOverAndNarrator = async (apiKey: string, detailedScript: string, systemPrompt: string): Promise<string> => {
+  return callGemini(apiKey, systemPrompt, detailedScript);
+};
+
 export const optimizeVideoPrompts = async (apiKey: string, imagePrompts: string, systemPrompt: string): Promise<string> => {
   return callGemini(apiKey, systemPrompt, imagePrompts);
 };

@@ -13,7 +13,8 @@ import {
   extractVoiceOver,
   generateImagePromptsList,
   createThumbnailAndMetadata,
-  optimizeVideoPrompts
+  optimizeVideoPrompts,
+  extractVoiceOverAndNarrator
 } from './services/geminiService';
 import StepProgressBar from './components/StepProgressBar';
 import WandIcon from './components/icons/WandIcon';
@@ -27,15 +28,16 @@ import LogOutIcon from './components/icons/LogOutIcon';
 import PromptManager from './components/PromptManager';
 import ImageIcon from './components/icons/ImageIcon';
 import VideoIcon from './components/icons/VideoIcon';
+import MicIcon from './components/icons/MicIcon';
 
 
 // --- HELPERS ---
 // Defines which step's output is the source for the current step's input
 const INPUT_SOURCE_MAP: { [key: number]: number } = {
-  2: 1, 3: 2, 4: 3, 5: 3, 6: 5, 9: 8, 10: 9, 11: 3, 12: 2,
+  2: 1, 3: 2, 4: 3, 5: 3, 6: 5, 9: 8, 10: 3, 12: 3, 13: 2,
 };
 // Steps with complex, multi-source inputs that shouldn't be edited directly
-const MULTI_SOURCE_STEPS = new Set([7, 8]);
+const MULTI_SOURCE_STEPS = new Set([7, 8, 11]);
 
 
 // Login Component
@@ -249,9 +251,12 @@ const App: React.FC = () => {
             if (!stepOutputs[4] || !stepOutputs[7]) return null;
             return `--- PHÂN TÍCH VÀ HỒ SƠ NHÂN VẬT (TỪ BƯỚC 4) ---\n${stepOutputs[4]}\n\n--- IMAGE PROMPT ĐÃ GẮN THẺ (TỪ BƯỚC 7) ---\n${stepOutputs[7]}`;
         case 9: return stepOutputs[8];
-        case 10: return stepOutputs[9];
-        case 11: return stepOutputs[3];
-        case 12: return stepOutputs[2];
+        case 10: return stepOutputs[3];
+        case 11:
+            if (!stepOutputs[9] || !stepOutputs[10]) return null;
+            return `--- PROMPTS ẢNH ĐÃ TỐI ƯU (TỪ BƯỚC 9) ---\n${stepOutputs[9]}\n\n--- LỜI BÌNH TƯƠNG ỨNG (TỪ BƯỚC 10) ---\n${stepOutputs[10]}`;
+        case 12: return stepOutputs[3];
+        case 13: return stepOutputs[2];
         default: return '';
     }
   }, [stepOutputs, topicKeyword]);
@@ -432,9 +437,10 @@ const App: React.FC = () => {
             case 7: result = await identifyCharactersInPrompts(apiKey, input, systemPrompt); break;
             case 8: result = await replacePlaceholders(apiKey, input, systemPrompt); break;
             case 9: result = await finalizePrompts(apiKey, input, systemPrompt); break;
-            case 10: result = await optimizeVideoPrompts(apiKey, input, systemPrompt); break;
-            case 11: result = await extractVoiceOver(apiKey, input, systemPrompt); break;
-            case 12: result = await createThumbnailAndMetadata(apiKey, input, systemPrompt); break;
+            case 10: result = await extractVoiceOverAndNarrator(apiKey, input, systemPrompt); break;
+            case 11: result = await optimizeVideoPrompts(apiKey, input, systemPrompt); break;
+            case 12: result = await extractVoiceOver(apiKey, input, systemPrompt); break;
+            case 13: result = await createThumbnailAndMetadata(apiKey, input, systemPrompt); break;
             default: throw new Error("Bước không hợp lệ.");
           }
 
@@ -485,9 +491,10 @@ const App: React.FC = () => {
         case 7: result = await identifyCharactersInPrompts(apiKey, input!, systemPrompt); break;
         case 8: result = await replacePlaceholders(apiKey, input!, systemPrompt); break;
         case 9: result = await finalizePrompts(apiKey, input!, systemPrompt); break;
-        case 10: result = await optimizeVideoPrompts(apiKey, input!, systemPrompt); break;
-        case 11: result = await extractVoiceOver(apiKey, input!, systemPrompt); break;
-        case 12: result = await createThumbnailAndMetadata(apiKey, input!, systemPrompt); break;
+        case 10: result = await extractVoiceOverAndNarrator(apiKey, input!, systemPrompt); break;
+        case 11: result = await optimizeVideoPrompts(apiKey, input!, systemPrompt); break;
+        case 12: result = await extractVoiceOver(apiKey, input!, systemPrompt); break;
+        case 13: result = await createThumbnailAndMetadata(apiKey, input!, systemPrompt); break;
         default: throw new Error("Bước này không thể tạo lại.");
       }
 
@@ -653,14 +660,23 @@ const App: React.FC = () => {
     }
     if (viewingStep === 5 && stepOutputs[viewingStep]) return renderSplitPromptView(stepOutputs[viewingStep]!);
 
-    if ([6, 7, 8, 9, 10].includes(viewingStep) && stepOutputs[viewingStep]) {
+    if ([6, 7, 8, 9, 10, 11].includes(viewingStep) && stepOutputs[viewingStep]) {
       const prompts = stepOutputs[viewingStep]!.split('\n').filter(Boolean);
       const titles: { [key: number]: string } = {
           6: 'Tách Image Prompts',
           7: 'Định Danh Nhân Vật (Ảnh)',
           8: 'Thay Thế Mô Tả (Ảnh)',
           9: 'Tối Ưu Hóa Image Prompts',
-          10: 'Tối Ưu Hóa Video Prompts'
+          10: 'Tách Lời Bình (VO & NARRATOR)',
+          11: 'Tối Ưu Hóa Video Prompts'
+      };
+      const icons: { [key: number]: React.ReactNode } = {
+          6: <ImageIcon className="h-5 w-5 text-sky-400" />,
+          7: <ImageIcon className="h-5 w-5 text-sky-400" />,
+          8: <ImageIcon className="h-5 w-5 text-sky-400" />,
+          9: <ImageIcon className="h-5 w-5 text-sky-400" />,
+          10: <MicIcon className="h-5 w-5 text-violet-400" />,
+          11: <VideoIcon className="h-5 w-5 text-teal-400" />,
       };
       return (
           <PromptManager
@@ -669,7 +685,7 @@ const App: React.FC = () => {
               onUpdate={(newPrompts) => {
                   handleUpdateStepOutput(viewingStep, newPrompts.join('\n'));
               }}
-              icon={viewingStep === 10 ? <VideoIcon className="h-5 w-5 text-teal-400"/> : <ImageIcon className="h-5 w-5 text-sky-400"/>}
+              icon={icons[viewingStep]}
           />
       );
     }
@@ -707,7 +723,7 @@ const App: React.FC = () => {
   }
 
   const renderCopyAllButton = () => {
-    if (!completedSteps.includes(12)) return null;
+    if (!completedSteps.includes(13)) return null;
     return (
         <div className="mt-12 text-center">
             <button
@@ -724,14 +740,14 @@ const App: React.FC = () => {
   
   if (!isLoggedIn) return <Login onLoginSuccess={handleLoginSuccess} />;
 
-  const isPromptStep = [5, 6, 7, 8, 9, 10].includes(viewingStep) && stepOutputs[viewingStep];
+  const isPromptStep = [5, 6, 7, 8, 9, 10, 11].includes(viewingStep) && stepOutputs[viewingStep];
 
   return (
     <div className="bg-slate-900 text-white min-h-screen font-sans">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">Trình Biên Tập Video AI All - In - One</h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-slate-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">Xây dựng kịch bản video chuyên nghiệp với quy trình 12 bước thông minh.</p>
+          <p className="mt-3 max-w-md mx-auto text-base text-slate-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">Xây dựng kịch bản video chuyên nghiệp với quy trình 13 bước thông minh.</p>
           <div className="mt-6 max-w-2xl mx-auto text-slate-400 text-sm p-4 bg-slate-800/50 rounded-lg border border-slate-700">
              <p>Contact: 0976863675</p>
             <p>Kết Bạn Zalo Hoặc Tham Gia Group <a href="https://zalo.me/g/ggyayc318" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">Tại Đây</a> Để Được Hướng Dẫn Thêm</p>

@@ -80,21 +80,28 @@ Sử dụng chính xác tiêu đề "--- NHÂN VẬT ---" để bắt đầu dan
   },
   {
     id: 10,
-    title: 'Bước 10: Tối Ưu Hóa Video Prompts',
-    description: 'Dựa trên các prompt ảnh đã được tối ưu, AI sẽ chuyển đổi và bổ sung các yếu tố chuyển động để tạo ra các prompt video/motion chất lượng cao.',
-    systemPrompt: `Bạn là một chuyên gia về prompt AI (Prompt Engineer) chuyên về video. Bạn sẽ nhận được một danh sách các prompt ảnh đã được tối ưu hóa. Nhiệm vụ của bạn là chuyển đổi mỗi prompt ảnh thành một prompt video bằng cách thêm vào các chi tiết về chuyển động của máy quay (camera movement), hành động của nhân vật (character actions), và các hiệu ứng động (dynamic effects) để tạo ra một cảnh quay sống động. Giữ nguyên cốt lõi mô tả của prompt gốc. Trả về danh sách prompt video đã được tối ưu, mỗi prompt trên một dòng.`,
-    buttonText: 'Tối Ưu Prompt Video'
+    title: 'Bước 10: Tách Lời Bình (VO & NARRATOR)',
+    description: 'AI sẽ trích xuất tất cả các phần lời bình (Voice-over) và lời dẫn chuyện (NARRATOR) từ kịch bản chi tiết theo đúng thứ tự.',
+    systemPrompt: `Bạn là một trợ lý biên tập video. Từ kịch bản chi tiết được cung cấp, hãy trích xuất TOÀN BỘ và CHỈ phần "Lời bình (Voice-over)" và các lời thoại của "NARRATOR" của mỗi cảnh. Trả về dưới dạng một danh sách được đánh số thứ tự (1., 2., 3., ...), đảm bảo giữ đúng thứ tự xuất hiện trong kịch bản. KHÔNG thêm bất kỳ mô tả, tiêu đề hay định dạng nào khác.`,
+    buttonText: 'Tách Lời Bình (VO & NARRATOR)',
   },
   {
     id: 11,
-    title: 'Bước 11: Tách Lời Bình & Voiceover',
+    title: 'Bước 11: Tối Ưu Hóa Video Prompts',
+    description: 'Dựa trên prompt ảnh đã tối ưu và lời bình tương ứng, AI sẽ tạo ra các prompt video/motion chất lượng cao.',
+    systemPrompt: `Bạn là một chuyên gia về prompt AI (Prompt Engineer) chuyên về video. Bạn sẽ nhận được hai phần thông tin: (1) một danh sách các prompt ảnh đã được tối ưu hóa và (2) một danh sách lời bình (voice-over) tương ứng theo thứ tự. Nhiệm vụ của bạn là kết hợp thông tin từ cả hai danh sách để chuyển đổi mỗi prompt ảnh thành một prompt video. Hãy thêm vào các chi tiết về chuyển động của máy quay (camera movement), hành động của nhân vật (character actions), và các hiệu ứng động (dynamic effects) để tạo ra một cảnh quay sống động, phù hợp với lời bình đi kèm. Giữ nguyên cốt lõi mô tả của prompt gốc. Trả về danh sách prompt video đã được tối ưu, mỗi prompt trên một dòng.`,
+    buttonText: 'Tối Ưu Prompt Video'
+  },
+  {
+    id: 12,
+    title: 'Bước 12: Tách Lời Bình & Voiceover',
     description: 'Tự động tách riêng phần lời bình của từng cảnh từ kịch bản chi tiết để tiện cho việc thu âm.',
     systemPrompt: `Bạn là một trợ lý biên tập video. Từ kịch bản chi tiết được cung cấp, hãy trích xuất TOÀN BỘ và CHỈ phần "Lời bình (Voice-over)" của mỗi cảnh. Trả về dưới dạng một danh sách được đánh số thứ tự (1., 2., 3., ...). KHÔNG thêm bất kỳ mô tả, tiêu đề hay định dạng nào khác.`,
     buttonText: 'Tách Lời Bình'
   },
   {
-    id: 12,
-    title: 'Bước 12: Tạo Thumbnail & Metadata',
+    id: 13,
+    title: 'Bước 13: Tạo Thumbnail & Metadata',
     description: 'AI sẽ đề xuất các ý tưởng thumbnail, tiêu đề, mô tả và tags cho video để tối ưu hóa SEO.',
     systemPrompt: `Bạn là một chuyên gia marketing YouTube. Dựa vào kịch bản tổng quan được cung cấp, hãy đề xuất:
 1.  **Tiêu đề video (3 lựa chọn):** Ngắn gọn, hấp dẫn, chứa từ khóa.
